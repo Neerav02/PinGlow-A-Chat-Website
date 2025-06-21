@@ -4,8 +4,9 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
-const session = require('express-session');
+// const session = require('express-session');
 const passport = require('passport');
+const path = require('path');
 
 dotenv.config();
 // Ensure Google Passport strategy is loaded
@@ -32,12 +33,12 @@ app.use(cors({
 app.use(express.json());
 
 // Session middleware (needed for Passport)
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your_secret_key', // Use a strong secret from .env
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' }
-}));
+// app.use(session({
+//   secret: process.env.SESSION_SECRET || 'your_secret_key', // Use a strong secret from .env
+//   resave: false,
+//   saveUninitialized: false,
+//   cookie: { secure: process.env.NODE_ENV === 'production' }
+// }));
 
 // Passport middleware
 app.use(passport.initialize());
@@ -53,6 +54,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
+
+// Serve static files from React
+app.use(express.static(path.join(__dirname, '../client/build')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+});
 
 // Generic Error Handling Middleware
 app.use((err, req, res, next) => {
